@@ -2,41 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Research Data Editor v3.0</title>
+    <title>Research Editor v4.0</title>
     <style>
         :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; }
-        body { font-family: sans-serif; background: var(--bg); padding: 20px; }
-        .nav { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; border-radius: 8px; position: sticky; top: 0; z-index: 100; }
-        .card { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #ddd; }
-        input, textarea, select { width: 100%; padding: 10px; margin: 5px 0 15px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
-        textarea { height: 100px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-save { background: var(--accent); color: white; width: 100%; font-size: 1.2rem; }
+        * { box-sizing: border-box; }
+        body { font-family: sans-serif; background: var(--bg); padding: 15px; margin: 0; }
+        .nav { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; position: sticky; top: 0; z-index: 1000; flex-wrap: wrap; gap: 10px; }
+        .container { max-width: 900px; margin: 20px auto; }
+        .card { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0 15px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
+        textarea { height: 120px; line-height: 1.5; }
+        .btn { padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-save { background: var(--accent); color: white; width: 100%; font-size: 1.1rem; margin-top: 20px; }
+        .btn-add { background: var(--primary); color: white; }
+        @media (max-width: 600px) { .nav input { width: 100%; } }
     </style>
 </head>
 <body>
 
 <div class="nav">
-    <div style="font-weight:bold;">DATA EDITOR v3.0</div>
-    <div>
-        <input type="password" id="gh-token" placeholder="GitHub Token" style="width:200px; margin:0; padding:5px;">
-        <button onclick="fetchData()">Load JSON</button>
+    <div style="font-weight:bold;">RESEARCH EDITOR v4.0</div>
+    <div style="display:flex; gap:10px; flex-grow:1; justify-content:flex-end;">
+        <input type="password" id="gh-token" placeholder="GitHub Token" style="width:180px; margin:0; padding:8px;">
+        <button class="btn" style="background:white; color:var(--primary); padding:8px 15px;" onclick="fetchData()">Sync</button>
     </div>
 </div>
 
-<div id="editor-ui" style="display:none; max-width: 800px; margin: auto;">
+<div class="container" id="editor-ui" style="display:none;">
     <div class="card">
-        <h3>Sidebar Info</h3>
+        <h3 style="margin-top:0;">Sidebar Info</h3>
         <label>Photo URL</label><input id="s-photo" onchange="data.sidebar.photo=this.value">
-        <label>Bio</label><textarea id="s-bio" onchange="data.sidebar.bio=this.value"></textarea>
+        <label>Name</label><input id="s-name" onchange="data.sidebar.name=this.value">
+        <label>Academic Title</label><input id="s-title" onchange="data.sidebar.title=this.value">
+        <label>Bio Summary</label><textarea id="s-bio" onchange="data.sidebar.bio=this.value"></textarea>
     </div>
     
-    <div style="text-align:right; margin-top:20px;">
-        <button class="btn" style="background:var(--primary); color:white;" onclick="addWork()">+ Add Post</button>
+    <div style="text-align:right; margin-top:25px;">
+        <button class="btn btn-add" onclick="addWork()">+ Add Publication / Post</button>
     </div>
     
     <div id="works-list"></div>
-    <button class="btn btn-save" onclick="saveData()">SAVE TO DATA.JSON</button>
+    <button class="btn btn-save" onclick="saveData()">PUBLISH TO DATA.JSON</button>
 </div>
 
 <script>
@@ -52,8 +58,10 @@
         fileSha = d.sha;
         data = JSON.parse(decodeURIComponent(escape(atob(d.content))));
         
-        document.getElementById('s-photo').value = data.sidebar.photo;
-        document.getElementById('s-bio').value = data.sidebar.bio;
+        document.getElementById('s-photo').value = data.sidebar.photo || '';
+        document.getElementById('s-name').value = data.sidebar.name || '';
+        document.getElementById('s-title').value = data.sidebar.title || '';
+        document.getElementById('s-bio').value = data.sidebar.bio || '';
         document.getElementById('editor-ui').style.display = 'block';
         renderWorks();
     }
@@ -62,21 +70,31 @@
         const list = document.getElementById('works-list');
         list.innerHTML = data.works.map((w, i) => `
             <div class="card">
-                <button style="float:right; color:red;" onclick="data.works.splice(${i},1); renderWorks();">Delete</button>
+                <button style="float:right; color:red; border:none; background:none; cursor:pointer; font-weight:bold;" onclick="data.works.splice(${i},1); renderWorks();">Delete [X]</button>
                 <label>Language</label>
                 <select onchange="data.works[${i}].lang=this.value; renderWorks();">
                     <option value="en" ${w.lang==='en'?'selected':''}>English</option>
-                    <option value="fa" ${w.lang==='fa'?'selected':''}>Persian</option>
                     <option value="jp" ${w.lang==='jp'?'selected':''}>Japanese</option>
+                    <option value="fa" ${w.lang==='fa'?'selected':''}>Persian</option>
+                    <option value="ku" ${w.lang==='ku'?'selected':''}>Kurdish</option>
                 </select>
-                <label>Title</label><input value="${w.title}" onchange="data.works[${i}].title=this.value">
-                <label>Abstract</label><textarea onchange="data.works[${i}].abstract=this.value">${w.abstract}</textarea>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div><label>Date</label><input value="${w.date || ''}" onchange="data.works[${i}].date=this.value"></div>
+                    <div><label>Type</label><input value="${w.type || ''}" onchange="data.works[${i}].type=this.value"></div>
+                </div>
+                <label>Title</label><input value="${w.title || ''}" onchange="data.works[${i}].title=this.value">
+                <label>Abstract Content</label><textarea onchange="data.works[${i}].abstract=this.value">${w.abstract || ''}</textarea>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div><label>Source (Journal/Conf)</label><input value="${w.source || ''}" onchange="data.works[${i}].source=this.value"></div>
+                    <div><label>Full Text Link (URL)</label><input value="${w.link || ''}" onchange="data.works[${i}].link=this.value"></div>
+                </div>
             </div>
         `).join('');
     }
 
     function addWork() {
-        data.works.unshift({ lang: "en", title: "New Title", abstract: "", date: "2026", type: "Article", source: "", link: "" });
+        if(!data.works) data.works = [];
+        data.works.unshift({ lang: "en", title: "", abstract: "", date: "2026", type: "Article", source: "", link: "" });
         renderWorks();
     }
 
@@ -86,12 +104,12 @@
             method: 'PUT',
             headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                message: "Update Research Data",
+                message: "Update Research Content v4.0",
                 content: btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2)))),
                 sha: fileSha
             })
         });
-        if(res.ok) alert("Data.json Updated!");
+        if(res.ok) alert("Successfully Published to data.json!");
     }
 </script>
 </body>
