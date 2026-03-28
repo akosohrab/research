@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sohrab Ahmadian | Research Highlights & Abstracts</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f9f9f9; --text: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        
+        /* Header */
+        header { text-align: center; margin-bottom: 50px; border-bottom: 3px solid var(--primary); padding-bottom: 20px; }
+        header h1 { margin: 0; color: var(--primary); font-size: 2.2rem; }
+        header p { color: #666; font-size: 1.1rem; }
+
+        /* Card Style */
+        .work-card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 30px; margin-bottom: 40px; border-top: 5px solid var(--primary); transition: 0.3s; }
+        .work-card:hover { transform: translateY(-5px); }
+        
+        .meta-info { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; font-size: 0.9rem; color: #7f8c8d; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .badge { padding: 3px 10px; border-radius: 20px; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; color: white; }
+        .lang-en { background: #3498db; } .lang-jp { background: #e74c3c; } .lang-fa { background: #27ae60; } .lang-ku { background: #8e44ad; }
+
+        .title { font-size: 1.5rem; margin: 10px 0; color: var(--primary); text-decoration: none; display: block; }
+        .author { font-style: italic; color: #555; margin-bottom: 20px; display: block; }
+        
+        /* Abstract Area */
+        .abstract-box { background: #fdfdfd; padding: 20px; border-radius: 8px; border: 1px solid #f0f0f0; margin-bottom: 20px; }
+        .abstract-box.rtl { direction: rtl; text-align: right; font-family: 'Tahoma', 'Arial', sans-serif; }
+        .abstract-box.ltr { direction: ltr; text-align: justify; }
+
+        /* Button */
+        .source-btn { display: inline-block; background: var(--primary); color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem; transition: 0.3s; }
+        .source-btn:hover { background: var(--accent); }
+
+        .back-home { display: block; text-align: center; margin-top: 40px; color: var(--primary); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Research & Publications</h1>
+        <p>Abstracts, Key Findings and Academic Outreach</p>
+    </header>
+
+    <div id="works-container">
+        </div>
+
+    <a href="https://akosohrab.github.io/CV" class="back-home">← Back to Full CV</a>
+</div>
+
+<script>
+/* DATA_START */
+const researchWorks = [
+  {
+    "id": "1",
+    "type": "Journal Article",
+    "date": "2024-06-04",
+    "author": "Sohrab Ahmadian",
+    "lang": "en",
+    "title": "Kurdish Diaspora in Japan: Navigating Identity and Activism on Social Media",
+    "abstract": "This study examines the digital footprint of the Kurdish community in Japan. It explores how social media platforms serve as a vital space for identity negotiation and political mobilization in a host society that often lacks formal recognition of their ethnic status...",
+    "source": "Palgrave Macmillan",
+    "link": "https://doi.org/10.1007/978-981-97-2867-1_10"
+  },
+  {
+    "id": "2",
+    "type": "Conference Paper",
+    "date": "2024-11-02",
+    "author": "ソホラブ アフマディヤーン",
+    "lang": "jp",
+    "title": "在日クルド人とホスト社会の受容：歴史的背景と現状",
+    "abstract": "本発表では、在日クルド人コミュニティの歴史的変遷と、日本社会における彼らの受容プロセスを分析する。多文化共生の視点から、自治体や市民社会との相互作用がいかに彼らの定住意識に影響を与えているかを明らかにする。",
+    "source": "Islamic Trust Studies, TUFS",
+    "link": "https://researchmap.jp/sohrab.ahmadian"
+  },
+  {
+    "id": "3",
+    "type": "Poetry Collection",
+    "date": "2014",
+    "author": "سهراب احمدیان",
+    "lang": "fa",
+    "title": "اعتراف (مجموعه شعر)",
+    "abstract": "این مجموعه شعر بازتاب‌دهنده‌ی تجربیات عاطفی و اجتماعی نویسنده در دوران گذار است. اشعار این مجموعه با نگاهی هستی‌شناسانه به مفاهیم غربت، هویت و تنهایی انسان معاصر می‌پردازد...",
+    "source": "نشر نیماژ",
+    "link": "#"
+  }
+];
+/* DATA_END */
+
+function renderWorks() {
+    const container = document.getElementById('works-container');
+    container.innerHTML = researchWorks.map(work => {
+        const isRtl = (work.lang === 'fa' || work.lang === 'ku');
+        return `
+            <div class="work-card">
+                <div class="meta-info">
+                    <span class="badge lang-${work.lang}">${work.lang.toUpperCase()}</span>
+                    <span><strong>Type:</strong> ${work.type}</span>
+                    <span><strong>Date:</strong> ${work.date}</span>
+                </div>
+                <div class="title">${work.title}</div>
+                <span class="author">By ${work.author}</span>
+                <div class="abstract-box ${isRtl ? 'rtl' : 'ltr'}">
+                    <strong>Abstract:</strong><br>
+                    ${work.abstract}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.85rem; color: #888;">Source: ${work.source}</span>
+                    ${work.link !== '#' ? `<a href="${work.link}" target="_blank" class="source-btn">View Full Text</a>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+window.onload = renderWorks;
+</script>
+</body>
+</html>
