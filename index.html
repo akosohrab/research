@@ -3,146 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sohrab Ahmadian | Research Blog</title>
+    <title>Sohrab Ahmadian | Research Portfolio</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; --text: #333; --sidebar-width: 300px; }
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; --sidebar-width: 300px; }
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; min-height: 100vh; transition: 0.3s; }
-        
-        /* Sidebar */
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; min-height: 100vh; }
         .sidebar { width: var(--sidebar-width); background: white; padding: 40px 30px; display: flex; flex-direction: column; align-items: center; text-align: center; border-right: 1px solid #eee; position: fixed; height: 100vh; overflow-y: auto; }
-        .profile-photo { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .sidebar h1 { font-size: 1.2rem; margin: 10px 0; color: var(--primary); }
-        .sidebar .bio { font-size: 0.85rem; color: #666; line-height: 1.6; margin: 20px 0; text-align: justify; }
-
-        /* Main Content */
+        .profile-photo { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 40px 5%; width: 100%; }
-        
-        /* Tabs - Responsive */
         .tabs-container { display: flex; justify-content: center; gap: 8px; margin-bottom: 30px; border-bottom: 2px solid #ddd; padding-bottom: 10px; position: sticky; top: 0; background: var(--bg); z-index: 100; flex-wrap: wrap; }
-        .tab-btn { padding: 10px 18px; border: none; background: none; font-weight: bold; cursor: pointer; color: #888; border-radius: 5px; font-size: 0.9rem; transition: 0.2s; }
+        .tab-btn { padding: 10px 18px; border: none; background: none; font-weight: bold; cursor: pointer; color: #888; border-radius: 5px; }
         .tab-btn.active { background: var(--primary); color: white; }
-
-        /* Work Card */
-        .work-card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #eee; display: none; width: 100%; }
-        .work-card.show { display: block; animation: fadeIn 0.3s ease-in; }
-        
-        .title { font-size: 1.5rem; color: var(--primary); margin: 10px 0; font-weight: 800; line-height: 1.3; }
-        .abstract-container { overflow: hidden; max-height: 120px; transition: max-height 0.4s ease; position: relative; }
+        .work-card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #eee; display: none; }
+        .work-card.show { display: block; animation: fadeIn 0.3s ease; }
+        /* اصلاح تراز متن و عنوان */
+        .rtl-box { direction: rtl; text-align: right; font-family: 'Tahoma', sans-serif; }
+        .ltr-box { direction: ltr; text-align: left; }
+        .title { font-size: 1.5rem; color: var(--primary); margin: 10px 0; font-weight: 800; }
+        .abstract-container { overflow: hidden; max-height: 120px; transition: max-height 0.4s ease; }
         .abstract-container.expanded { max-height: 3000px; }
-        .rtl { direction: rtl; text-align: right; font-family: 'Tahoma', sans-serif; line-height: 1.8; }
-        
-        .read-more-btn { color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; margin: 15px 0; padding: 0; font-size: 0.9rem; }
-        .footer-info { margin-top: 20px; padding-top: 15px; border-top: 1px dashed #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-
-        #no-data-msg { text-align: center; color: #999; padding: 40px; width: 100%; display: none; }
-
+        .read-more-btn { color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; margin: 15px 0; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Responsive Breakpoints */
-        @media (max-width: 992px) {
-            :root { --sidebar-width: 250px; }
-        }
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid #eee; padding: 30px 20px; }
-            .main-content { margin-left: 0; padding: 30px 15px; }
-            .title { font-size: 1.2rem; }
-        }
+        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; height: auto; position: relative; } .main-content { margin-left: 0; } }
     </style>
 </head>
 <body>
-
 <div class="sidebar" id="sidebar-ui"></div>
-
 <div class="main-content">
-    <div class="tabs-container">
+    <div class="tabs-container" id="tabs-list">
         <button class="tab-btn active" onclick="filterByLang('en', this)">English</button>
         <button class="tab-btn" onclick="filterByLang('jp', this)">日本語</button>
         <button class="tab-btn" onclick="filterByLang('ku', this)">کوردی</button>
         <button class="tab-btn" onclick="filterByLang('fa', this)">فارسی</button>
     </div>
-
     <div id="blog-container"></div>
-    <div id="no-data-msg"></div>
+    <div id="no-data-msg" style="text-align:center; color:#999; display:none; padding:50px;"></div>
 </div>
-
 <script>
 let allWorks = [];
 const labels = { en: "Read More...", jp: "続きを読む...", fa: "ادامه مطلب...", ku: "درێژە..." };
 
 async function loadData() {
-    try {
-        const response = await fetch('data.json');
-        const data = await response.json();
-        allWorks = data.works || [];
-        renderSidebar(data.sidebar);
-        renderWorks();
-        filterByLang('en');
-    } catch (e) { document.getElementById('blog-container').innerText = "Error loading data."; }
+    const res = await fetch('data.json');
+    const data = await res.json();
+    allWorks = data.works;
+    renderSidebar(data.sidebar);
+    renderWorks();
+    filterByLang('en');
 }
 
 function renderSidebar(s) {
-    document.getElementById('sidebar-ui').innerHTML = `
-        <img src="${s.photo}" class="profile-photo">
-        <h1>${s.name}</h1>
-        <p style="color:var(--accent); font-weight:bold; font-size:0.8rem;">${s.title}</p>
-        <div class="bio">${s.bio}</div>
-        <a href="https://akosohrab.github.io/CV" style="text-decoration:none; color:#999; font-size:0.8rem;">← Professional CV</a>
-    `;
+    document.getElementById('sidebar-ui').innerHTML = `<img src="${s.photo}" class="profile-photo"><h1>${s.name}</h1><p style="color:var(--accent)">${s.title}</p><div style="font-size:0.85rem; padding:0 10px;">${s.bio}</div>`;
 }
 
 function renderWorks() {
-    const container = document.getElementById('blog-container');
-    container.innerHTML = allWorks.map((work, i) => {
+    document.getElementById('blog-container').innerHTML = allWorks.map((work, i) => {
         const isRtl = (work.lang === 'fa' || work.lang === 'ku');
+        const alignmentClass = isRtl ? 'rtl-box' : 'ltr-box';
         return `
-            <div class="work-card lang-group-${work.lang}" id="card-${i}">
+            <div class="work-card lang-group-${work.lang} ${alignmentClass}">
                 <div style="font-size:0.75rem; color:#999;">${work.date} • ${work.type}</div>
                 <h2 class="title">${work.title}</h2>
                 <div class="abstract-container" id="container-${i}">
-                    <div class="${isRtl ? 'rtl' : ''}">${work.abstract}</div>
+                    <div style="line-height:1.8;">${marked.parse(work.abstract)}</div>
                 </div>
                 <button class="read-more-btn" onclick="toggleReadMore(${i}, '${work.lang}')" id="btn-${i}">${labels[work.lang] || labels.en}</button>
-                <div class="footer-info">
-                    <span style="font-size:0.8rem; color:#888;">${work.source}</span>
-                    ${work.link ? `<a href="${work.link}" target="_blank" style="background:var(--primary); color:white; padding:6px 15px; border-radius:4px; text-decoration:none; font-size:0.75rem;">Full Text</a>` : ''}
+                <div style="margin-top:15px; border-top:1px dashed #eee; padding-top:10px; display:flex; justify-content:space-between; font-size:0.8rem;">
+                    <span>${work.source}</span>
+                    <a href="${work.link}" target="_blank" style="color:var(--primary); font-weight:bold;">Full Record →</a>
                 </div>
             </div>`;
     }).join('');
 }
 
-function filterByLang(lang, btnElement) {
-    if(btnElement) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btnElement.classList.add('active');
-    }
-
-    let found = 0;
-    document.querySelectorAll('.work-card').forEach(card => {
-        card.classList.remove('show');
-        if(card.classList.contains(`lang-group-${lang}`)) {
-            card.classList.add('show');
-            found++;
-        }
+function filterByLang(lang, btn) {
+    if(btn) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+    let count = 0;
+    document.querySelectorAll('.work-card').forEach(c => {
+        c.classList.remove('show');
+        if(c.classList.contains(`lang-group-${lang}`)) { c.classList.add('show'); count++; }
     });
-
-    const msgBox = document.getElementById('no-data-msg');
-    if(found === 0) {
-        msgBox.style.display = 'block';
-        msgBox.innerText = (lang==='fa'?"مطلبی یافت نشد.":(lang==='ku'?"هیچ بابەتێک نەدۆزرایەوە.":(lang==='jp'?"記事が見つかりませんでした。":"No publications found.")));
-    } else {
-        msgBox.style.display = 'none';
-    }
+    document.getElementById('no-data-msg').style.display = count === 0 ? 'block' : 'none';
+    document.getElementById('no-data-msg').innerText = "No posts in this language.";
 }
 
 function toggleReadMore(i, lang) {
     const c = document.getElementById(`container-${i}`);
-    const b = document.getElementById(`btn-${i}`);
     c.classList.toggle('expanded');
-    b.innerText = c.classList.contains('expanded') ? (lang==='fa'?'بستن':(lang==='jp'?'閉じる':(lang==='ku'?'داخستن':'Close'))) : (labels[lang] || labels.en);
+    document.getElementById(`btn-${i}`).innerText = c.classList.contains('expanded') ? (lang==='fa'?'بستن':(lang==='jp'?'閉じる':(lang==='ku'?'داخستن':'Close'))) : (labels[lang] || labels.en);
 }
-
 window.onload = loadData;
 </script>
 </body>
