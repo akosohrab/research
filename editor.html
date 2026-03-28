@@ -2,14 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sohrab's Research Manager v1.0</title>
+    <title>Sohrab's Research Manager v2.0</title>
     <style>
-        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; --danger: #e74c3c; }
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; --danger: #e74c3c; --info: #3498db; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
         .nav-bar { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .container { max-width: 1000px; margin: 25px auto; }
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #eee; position: relative; }
         
+        /* Sidebar Profile Editor */
+        .sidebar-editor { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; background: #fbfcfc; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 20px; }
+        .photo-preview { width: 100%; height: 150px; border-radius: 8px; object-fit: cover; border: 3px solid #eee; margin-bottom: 10px; }
+
         /* Language Style Sync */
         .rtl-input { direction: rtl; text-align: right; font-family: Tahoma, Arial, sans-serif; }
         .ltr-input { direction: ltr; text-align: left; }
@@ -17,7 +21,7 @@
         .entry-box { border-left: 5px solid var(--accent); background: #fafafa; padding: 20px; margin-bottom: 20px; border-radius: 6px; position: relative; }
         label { display: block; font-size: 11px; font-weight: bold; color: #777; margin-bottom: 5px; text-transform: uppercase; }
         input, textarea, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; margin-bottom: 10px; }
-        textarea { height: 150px; line-height: 1.6; }
+        textarea { height: 120px; line-height: 1.6; }
 
         .btn { padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .btn-save { background: var(--accent); color: white; width: 100%; font-size: 18px; margin-top: 20px; box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3); }
@@ -29,29 +33,44 @@
 <body>
 
 <div class="nav-bar">
-    <div style="font-weight: 800; font-size: 20px;">RESEARCH PUBLISHER <span style="font-weight: 300; font-size: 13px;">v1.0</span></div>
+    <div style="font-weight: 800; font-size: 20px;">RESEARCH PUBLISHER <span style="font-weight: 300; font-size: 13px;">v2.0</span></div>
     <div style="display: flex; gap: 10px; align-items: center;">
         <input type="password" id="gh-token" placeholder="GitHub Token" style="width: 250px; padding: 10px; margin: 0; border: none; border-radius: 4px;">
-        <button class="btn" style="background: white; color: var(--primary);" onclick="fetchData()">Load Works</button>
+        <button class="btn" style="background: white; color: var(--primary);" onclick="fetchData()">Load Content</button>
     </div>
 </div>
 
 <div class="container" id="editor-ui" style="display:none;">
+    <div class="card">
+        <h3 style="margin-top:0; color:var(--primary);">SIDEBAR PROFILE (Photo & Bio)</h3>
+        <div class="sidebar-editor">
+            <div style="text-align:center;">
+                <img src="" id="photo-preview" class="photo-preview" alt="Preview">
+                <input type="text" id="sidebar-photo" placeholder="Photo URL" onchange="updateSidebar('photo', this.value); document.getElementById('photo-preview').src=this.value;">
+            </div>
+            <div>
+                <label>Display Name</label><input type="text" id="sidebar-name" onchange="updateSidebar('name', this.value)">
+                <label>Academic Title/Tagline</label><input type="text" id="sidebar-title" onchange="updateSidebar('title', this.value)">
+                <label>Short Bio (English)</label><textarea id="sidebar-bio" onchange="updateSidebar('bio', this.value)" style="height:100px;"></textarea>
+            </div>
+        </div>
+    </div>
+
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="color: var(--primary); margin: 0;">Manage Abstracts & Publications</h2>
-        <button class="btn" style="background: var(--primary); color: white;" onclick="addNewWork()">+ Add New Publication/Abstract</button>
+        <h3 style="color: var(--primary); margin: 0;">Publications & Abstracts</h3>
+        <button class="btn" style="background: var(--info); color: white;" onclick="addNewWork()">+ Add New Work</button>
     </div>
     
     <div id="works-list"></div>
     
-    <button class="btn btn-save" onclick="saveToGitHub()">PUBLISH UPDATES LIVE</button>
+    <button class="btn btn-save" onclick="saveToGitHub()">PUBLISH ALL UPDATES LIVE</button>
 </div>
 
 <div id="status"></div>
 
 <script>
     const GITHUB = { owner: "akosohrab", repo: "research", path: "index.html" };
-    let researchWorks = [], fileSha = "", originalContent = "";
+    let researchData = {}, fileSha = "", originalContent = "";
 
     async function fetchData() {
         const token = document.getElementById('gh-token').value;
@@ -65,7 +84,7 @@
             fileSha = d.sha;
             originalContent = decodeURIComponent(escape(atob(d.content)));
             const jsonPart = originalContent.split('/* DATA_START */')[1].split('/* DATA_END */')[0];
-            researchWorks = JSON.parse(jsonPart.replace('const researchWorks = ', '').trim().replace(/;$/, ''));
+            researchData = JSON.parse(jsonPart.replace('const researchData = ', '').trim().replace(/;$/, ''));
             document.getElementById('editor-ui').style.display = 'block';
             render();
             showMsg("Connected!", "#27ae60");
@@ -73,12 +92,21 @@
     }
 
     function render() {
+        // 1. Render Sidebar Editor Fields
+        const s = researchData.sidebar;
+        document.getElementById('sidebar-photo').value = s.photo || '';
+        document.getElementById('photo-preview').src = s.photo || 'https://via.placeholder.com/150';
+        document.getElementById('sidebar-name').value = s.name || '';
+        document.getElementById('sidebar-title').value = s.title || '';
+        document.getElementById('sidebar-bio').value = s.bio || '';
+
+        // 2. Render Works List
         const list = document.getElementById('works-list');
-        list.innerHTML = researchWorks.map((work, i) => {
+        list.innerHTML = researchData.works.map((work, i) => {
             const isRtl = (work.lang === 'fa' || work.lang === 'ku');
             return `
                 <div class="card">
-                    <button class="btn-danger" onclick="removeWork(${i})">Delete Work</button>
+                    <button class="btn-danger" onclick="removeWork(${i})">Delete</button>
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                         <div><label>Language</label>
                             <select onchange="updateWork(${i}, 'lang', this.value); render();">
@@ -88,18 +116,15 @@
                                 <option value="ku" ${work.lang==='ku'?'selected':''}>Kurdish</option>
                             </select>
                         </div>
-                        <div><label>Type</label><input value="${work.type}" onchange="updateWork(${i}, 'type', this.value)" placeholder="Journal, Conference..."></div>
+                        <div><label>Type</label><input value="${work.type}" onchange="updateWork(${i}, 'type', this.value)" placeholder="e.g., Journal, Conference"></div>
                         <div><label>Date</label><input value="${work.date}" onchange="updateWork(${i}, 'date', this.value)"></div>
                     </div>
 
                     <label>Title</label>
                     <input class="${isRtl ? 'rtl-input' : 'ltr-input'}" value="${work.title}" onchange="updateWork(${i}, 'title', this.value)">
 
-                    <label>Author(s)</label>
-                    <input value="${work.author}" onchange="updateWork(${i}, 'author', this.value)">
-
                     <label>Abstract / Key Findings</label>
-                    <textarea class="${isRtl ? 'rtl-input' : 'ltr-input'}" onchange="updateWork(${i}, 'abstract', this.value)">${work.abstract}</textarea>
+                    <textarea class="${isRtl ? 'rtl-input' : 'ltr-input'}" onchange="updateWork(${i}, 'abstract', this.value)" style="height:150px;">${work.abstract}</textarea>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div><label>Source / Journal Name</label><input value="${work.source}" onchange="updateWork(${i}, 'source', this.value)"></div>
@@ -110,23 +135,26 @@
         }).join('');
     }
 
-    function updateWork(i, key, val) { researchWorks[i][key] = val; }
+    // Update Functions
+    function updateSidebar(key, val) { researchData.sidebar[key] = val; }
+    function updateWork(i, key, val) { researchData.works[i][key] = val; }
+    
     function addNewWork() {
-        researchWorks.unshift({ id: Date.now().toString(), type: "Journal Article", date: "2026", author: "Sohrab Ahmadian", lang: "en", title: "", abstract: "", source: "", link: "" });
+        researchData.works.unshift({ id: Date.now().toString(), type: "Journal Article", date: "2026", author: "Sohrab Ahmadian", lang: "en", title: "", abstract: "", source: "", link: "" });
         render();
     }
-    function removeWork(i) { if(confirm("Delete this work?")) { researchWorks.splice(i, 1); render(); } }
+    function removeWork(i) { if(confirm("Delete this work?")) { researchData.works.splice(i, 1); render(); } }
 
     async function saveToGitHub() {
         const token = document.getElementById('gh-token').value;
         showMsg("Publishing...", "#f39c12");
-        const newData = `/* DATA_START */\nconst researchWorks = ${JSON.stringify(researchWorks, null, 2)};\n/* DATA_END */`;
+        const newData = `/* DATA_START */\nconst researchData = ${JSON.stringify(researchData, null, 2)};\n/* DATA_END */`;
         const updated = originalContent.replace(/\/\* DATA_START \*\/[\s\S]*?\/\* DATA_END \*\//, newData);
         try {
             const res = await fetch(`https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${GITHUB.path}`, {
                 method: 'PUT',
                 headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: "Research Update", content: btoa(unescape(encodeURIComponent(updated))), sha: fileSha })
+                body: JSON.stringify({ message: "Research v2.0 Update", content: btoa(unescape(encodeURIComponent(updated))), sha: fileSha })
             });
             if(res.ok) { const r = await res.json(); fileSha = r.content.sha; showMsg("Published Successfully!", "#27ae60"); }
         } catch (e) { showMsg("Failed to Save!", "#e74c3c"); }
