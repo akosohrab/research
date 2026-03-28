@@ -3,153 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sohrab Ahmadian | Research Highlights & Abstracts</title>
+    <title>Sohrab Ahmadian | Research Blog</title>
     <style>
-        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; --text: #333; --sidebar-width: 280px; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; min-height: 100vh; overflow-x: hidden; }
-        
-        /* Sidebar Styling */
-        .sidebar { width: var(--sidebar-width); background: white; padding: 40px 30px; display: flex; flex-direction: column; align-items: center; text-align: center; border-right: 1px solid #eee; position: fixed; height: 100vh; box-sizing: border-box; z-index: 10; }
-        .profile-photo { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 5px solid #f0f0f0; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .sidebar h1 { font-size: 1.4rem; color: var(--primary); margin: 10px 0 5px 0; font-weight: 800; }
-        .sidebar .title { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 20px; font-style: italic; }
-        .sidebar .bio { font-size: 0.85rem; color: #555; line-height: 1.6; margin-bottom: 30px; text-align: justify; border-top: 1px solid #eee; padding-top: 15px; }
-        .back-home { background: var(--primary); color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-size: 0.8rem; font-weight: bold; transition: 0.3s; }
-        .back-home:hover { background: var(--accent); }
-
-        /* Main Content Styling */
-        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 50px; box-sizing: border-box; }
-        .section-header { border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 40px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; font-size: 1.1rem; }
-
-        /* Card Style */
-        .work-card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 30px; position: relative; border: 1px solid #eee; transition: 0.3s; }
-        .work-card:hover { box-shadow: 0 5px 20px rgba(0,0,0,0.1); transform: translateY(-3px); }
-        
-        .meta-info { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; font-size: 0.8rem; color: #7f8c8d; align-items: center;}
-        .badge { padding: 3px 10px; border-radius: 20px; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; color: white; }
-        .lang-en { background: #3498db; } .lang-jp { background: #e74c3c; } .lang-fa { background: #27ae60; } .lang-ku { background: #8e44ad; }
-
-        .title { font-size: 1.4rem; margin: 5px 0 15px 0; color: var(--primary); font-weight: 700; }
-        
-        /* Abstract Area */
-        .abstract-box { background: #fbfcfc; padding: 20px; border-radius: 8px; border: 1px solid #f0f0f0; margin-bottom: 20px; font-size: 0.95rem; color: #444;}
-        .abstract-box.rtl { direction: rtl; text-align: right; font-family: 'Tahoma', sans-serif; line-height: 1.8; }
-        .abstract-box.ltr { direction: ltr; text-align: justify; }
-
-        .source-btn { display: inline-block; background: var(--primary); color: white; padding: 8px 18px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.8rem; transition: 0.3s; }
-        .source-btn:hover { background: var(--accent); }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid #eee; padding: 30px; }
-            .main-content { margin-left: 0; padding: 30px; }
-        }
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; --text: #333; --sidebar-width: 300px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background: white; padding: 40px 30px; display: flex; flex-direction: column; align-items: center; text-align: center; border-right: 1px solid #eee; position: fixed; height: 100vh; box-sizing: border-box; }
+        .profile-photo { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 60px; box-sizing: border-box; }
+        .work-card { background: white; border-radius: 12px; padding: 30px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #eee; }
+        .abstract-container { overflow: hidden; max-height: 100px; transition: max-height 0.4s ease; }
+        .abstract-container.expanded { max-height: 2000px; }
+        .rtl { direction: rtl; text-align: right; font-family: 'Tahoma', sans-serif; }
+        .read-more-btn { color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; margin: 10px 0; }
+        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; height: auto; position: relative; } .main-content { margin-left: 0; padding: 25px; } }
     </style>
 </head>
 <body>
 
-<div class="sidebar" id="sidebar-content">
-    </div>
-
-<div class="main-content">
-    <div class="section-header">Research Highlights & Abstracts</div>
-    <div id="works-container">
-        </div>
-</div>
+<div class="sidebar" id="sidebar-ui"></div>
+<div class="main-content" id="blog-container">Loading research data...</div>
 
 <script>
-/* DATA_START */
-const researchData = {
-  "sidebar": {
-    "photo": "https://researchmap.jp/sohrab.ahmadian/avatar.jpg",
-    "name": "Sohrab Ahmadian, Ph.D.",
-    "title": "JSPS Fellow | Migration Researcher",
-    "bio": "Dr. Sohrab Ahmadian is a political anthropologist specializing in migration, diaspora studies, and identity negotiation, with a focus on Kurdish communities in Japan. His research explores the intersection of digital activism, host society reception, and policy. He currently holds a JSPS Postdoctoral Fellowship at Tokyo University of Foreign Studies."
-  },
-  "works": [
-    {
-      "id": "1774721807776",
-      "type": "Journal Article",
-      "date": "2026",
-      "author": "Sohrab Ahmadian",
-      "lang": "en",
-      "title": "Kurdish Diaspora in Japan:Caught in a Limbo Between Immigration Policies and Politics",
-      "abstract": "The Japanese government needs to establish a specific task force to identify and strategically manage the growing Kurdish community in Japan. Some Kurdish immigrants arrive in Japan with their families, including parents, spouses, and children. This situation highlights the need for the Japanese government to develop policies that support dependent family members of Kurdish migrants as they adapt to and integrate into Japanese society.\nJapan has long faced labor shortages in several sectors, including those where many Kurdish workers are now employed. In response, the government recently introduced the “Specified Skilled Worker” system, which allows citizens from twelve designated countries to apply for a Japanese work visa.",
-      "source": "Northern England Policy Center for Asia Pacific (NEPCAP) University of Central Lancashire",
-      "link": "https://researchmap.jp/sohrab.ahmadian/published_papers/47621845?lang=en"
-    },
-    {
-      "id": "1",
-      "type": "Journal Article",
-      "date": "2024-06-04",
-      "author": "Sohrab Ahmadian",
-      "lang": "en",
-      "title": "Kurdish Diaspora in Japan: Navigating Identity and Activism on Social Media",
-      "abstract": "This study examines the digital footprint of the Kurdish community in Japan. It explores how social media platforms serve as a vital space for identity negotiation and political mobilization in a host society that often lacks formal recognition of their ethnic status...",
-      "source": "Palgrave Macmillan",
-      "link": "https://doi.org/10.1007/978-981-97-2867-1_10"
-    },
-    {
-      "id": "2",
-      "type": "Newsletter Article",
-      "date": "2024-11-02",
-      "author": "ソホラブ アフマディヤーン",
-      "lang": "jp",
-      "title": "在日クルド人とホスト社会の受容：歴史的背景と現状",
-      "abstract": "本稿では、日本における在日クルド人の歴史的背景と現状について、多文化共生の観点から考察する。クルド人の来日経緯、社会的課題、定住状況を概観し、日本社会との関係性について分析する。特に、彼らが直面する法的・社会的課題に焦点を当て、今後の共生に向けた可能性について議論する。",
-      "source": "Islamic Trust Studies, TUFS",
-      "link": "https://researchmap.jp/sohrab.ahmadian/published_papers/49664755?lang=ja"
-    }
-  ]
-};
-/* DATA_END */
+const labels = { en: "Read More...", jp: "続きを読む...", fa: "ادامه مطلب...", ku: "درێژە..." };
 
-function makeLinks(text) {
-    if (!text) return "";
-    const urlPattern = /(https?:\/\/[^\s]+)/g;
-    return text.replace(urlPattern, url => `<a href="${url}" target="_blank" style="color:var(--accent); text-decoration:none;">${url}</a>`);
+async function loadData() {
+    try {
+        const response = await fetch('data.json');
+        const data = await response.json();
+        renderPage(data);
+    } catch (e) { document.getElementById('blog-container').innerText = "Error loading data."; }
 }
 
-function renderPage() {
-    // Render Sidebar
-    const s = researchData.sidebar;
-    document.getElementById('sidebar-content').innerHTML = `
-        <img src="${s.photo || 'https://via.placeholder.com/150'}" class="profile-photo" alt="${s.name}">
-        <h1>${s.name}</h1>
-        <div class="title">${s.title}</div>
-        <div class="bio">${s.bio}</div>
-        <a href="https://akosohrab.github.io/CV" class="back-home">← View Full CV</a>
+function renderPage(data) {
+    const s = data.sidebar;
+    document.getElementById('sidebar-ui').innerHTML = `
+        <img src="${s.photo}" class="profile-photo">
+        <h1>${s.name}</h1><p style="color:var(--accent)">${s.title}</p>
+        <div style="font-size:0.85rem; color:#666; margin:20px 0;">${s.bio}</div>
+        <a href="https://akosohrab.github.io/CV" style="text-decoration:none; color:#999; font-size:0.8rem;">← Professional CV</a>
     `;
 
-    // Render Works
-    const container = document.getElementById('works-container');
-    container.innerHTML = researchData.works.map(work => {
+    document.getElementById('blog-container').innerHTML = data.works.map((work, i) => {
         const isRtl = (work.lang === 'fa' || work.lang === 'ku');
         return `
             <div class="work-card">
-                <div class="meta-info">
-                    <span class="badge lang-${work.lang}">${work.lang.toUpperCase()}</span>
-                    <span>|</span>
-                    <span><strong>Type:</strong> ${work.type}</span>
-                    <span>|</span>
-                    <span><strong>Date:</strong> ${work.date}</span>
+                <div style="font-size:0.8rem; color:#999;">${work.date} • ${work.type}</div>
+                <h2 style="color:var(--primary); margin:10px 0;">${work.title}</h2>
+                <div class="abstract-container" id="container-${i}">
+                    <div class="${isRtl ? 'rtl' : ''}" style="line-height:1.7;">${work.abstract}</div>
                 </div>
-                <div class="title">${work.title}</div>
-                <div class="abstract-box ${isRtl ? 'rtl' : 'ltr'}">
-                    <strong>Abstract:</strong><br>
-                    ${work.abstract}
+                <button class="read-more-btn" onclick="toggleReadMore(${i}, '${work.lang}')" id="btn-${i}">${labels[work.lang] || labels.en}</button>
+                <div style="margin-top:20px; border-top:1px dashed #eee; padding-top:15px; display:flex; justify-content:space-between;">
+                    <span style="font-size:0.8rem; color:#888;">${work.source}</span>
+                    <a href="${work.link}" target="_blank" style="color:var(--primary); font-weight:bold; text-decoration:none; font-size:0.8rem;">Full Text →</a>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 15px;">
-                    <span style="font-size: 0.8rem; color: #888;">Source: ${work.source}</span>
-                    ${work.link !== '#' ? `<a href="${work.link}" target="_blank" class="source-btn">View Full Text</a>` : ''}
-                </div>
-            </div>
-        `;
+            </div>`;
     }).join('');
 }
 
-window.onload = renderPage;
+function toggleReadMore(i, lang) {
+    const c = document.getElementById(`container-${i}`);
+    const b = document.getElementById(`btn-${i}`);
+    c.classList.toggle('expanded');
+    b.innerText = c.classList.contains('expanded') ? ((lang==='fa'?'بستن':(lang==='jp'?'閉じる':'Close'))) : (labels[lang] || labels.en);
+}
+
+window.onload = loadData;
 </script>
 </body>
 </html>
