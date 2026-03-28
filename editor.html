@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sohrab's Research Manager v1.0</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; --danger: #e74c3c; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .nav-bar { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .container { max-width: 1000px; margin: 25px auto; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #eee; position: relative; }
+        
+        /* Language Style Sync */
+        .rtl-input { direction: rtl; text-align: right; font-family: Tahoma, Arial, sans-serif; }
+        .ltr-input { direction: ltr; text-align: left; }
+
+        .entry-box { border-left: 5px solid var(--accent); background: #fafafa; padding: 20px; margin-bottom: 20px; border-radius: 6px; position: relative; }
+        label { display: block; font-size: 11px; font-weight: bold; color: #777; margin-bottom: 5px; text-transform: uppercase; }
+        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; margin-bottom: 10px; }
+        textarea { height: 150px; line-height: 1.6; }
+
+        .btn { padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-save { background: var(--accent); color: white; width: 100%; font-size: 18px; margin-top: 20px; box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3); }
+        .btn-danger { background: var(--danger); color: white; padding: 6px 12px; font-size: 11px; position: absolute; right: 15px; top: 15px; }
+        
+        #status { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 30px; border-radius: 50px; color: white; display: none; z-index: 2000; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <div style="font-weight: 800; font-size: 20px;">RESEARCH PUBLISHER <span style="font-weight: 300; font-size: 13px;">v1.0</span></div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="password" id="gh-token" placeholder="GitHub Token" style="width: 250px; padding: 10px; margin: 0; border: none; border-radius: 4px;">
+        <button class="btn" style="background: white; color: var(--primary);" onclick="fetchData()">Load Works</button>
+    </div>
+</div>
+
+<div class="container" id="editor-ui" style="display:none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="color: var(--primary); margin: 0;">Manage Abstracts & Publications</h2>
+        <button class="btn" style="background: var(--primary); color: white;" onclick="addNewWork()">+ Add New Publication/Abstract</button>
+    </div>
+    
+    <div id="works-list"></div>
+    
+    <button class="btn btn-save" onclick="saveToGitHub()">PUBLISH UPDATES LIVE</button>
+</div>
+
+<div id="status"></div>
+
+<script>
+    const GITHUB = { owner: "akosohrab", repo: "research", path: "index.html" };
+    let researchWorks = [], fileSha = "", originalContent = "";
+
+    async function fetchData() {
+        const token = document.getElementById('gh-token').value;
+        if(!token) return showMsg("Token required!", "#e74c3c");
+        showMsg("Syncing...", "#f39c12");
+        try {
+            const res = await fetch(`https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${GITHUB.path}`, {
+                headers: { 'Authorization': `token ${token}` }
+            });
+            const d = await res.json();
+            fileSha = d.sha;
+            originalContent = decodeURIComponent(escape(atob(d.content)));
+            const jsonPart = originalContent.split('/* DATA_START */')[1].split('/* DATA_END */')[0];
+            researchWorks = JSON.parse(jsonPart.replace('const researchWorks = ', '').trim().replace(/;$/, ''));
+            document.getElementById('editor-ui').style.display = 'block';
+            render();
+            showMsg("Connected!", "#27ae60");
+        } catch (e) { showMsg("Marker Error!", "#e74c3c"); }
+    }
+
+    function render() {
+        const list = document.getElementById('works-list');
+        list.innerHTML = researchWorks.map((work, i) => {
+            const isRtl = (work.lang === 'fa' || work.lang === 'ku');
+            return `
+                <div class="card">
+                    <button class="btn-danger" onclick="removeWork(${i})">Delete Work</button>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                        <div><label>Language</label>
+                            <select onchange="updateWork(${i}, 'lang', this.value); render();">
+                                <option value="en" ${work.lang==='en'?'selected':''}>English</option>
+                                <option value="jp" ${work.lang==='jp'?'selected':''}>Japanese</option>
+                                <option value="fa" ${work.lang==='fa'?'selected':''}>Persian</option>
+                                <option value="ku" ${work.lang==='ku'?'selected':''}>Kurdish</option>
+                            </select>
+                        </div>
+                        <div><label>Type</label><input value="${work.type}" onchange="updateWork(${i}, 'type', this.value)" placeholder="Journal, Conference..."></div>
+                        <div><label>Date</label><input value="${work.date}" onchange="updateWork(${i}, 'date', this.value)"></div>
+                    </div>
+
+                    <label>Title</label>
+                    <input class="${isRtl ? 'rtl-input' : 'ltr-input'}" value="${work.title}" onchange="updateWork(${i}, 'title', this.value)">
+
+                    <label>Author(s)</label>
+                    <input value="${work.author}" onchange="updateWork(${i}, 'author', this.value)">
+
+                    <label>Abstract / Key Findings</label>
+                    <textarea class="${isRtl ? 'rtl-input' : 'ltr-input'}" onchange="updateWork(${i}, 'abstract', this.value)">${work.abstract}</textarea>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div><label>Source / Journal Name</label><input value="${work.source}" onchange="updateWork(${i}, 'source', this.value)"></div>
+                        <div><label>Link to Full Text (URL)</label><input value="${work.link}" onchange="updateWork(${i}, 'link', this.value)"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function updateWork(i, key, val) { researchWorks[i][key] = val; }
+    function addNewWork() {
+        researchWorks.unshift({ id: Date.now().toString(), type: "Journal Article", date: "2026", author: "Sohrab Ahmadian", lang: "en", title: "", abstract: "", source: "", link: "" });
+        render();
+    }
+    function removeWork(i) { if(confirm("Delete this work?")) { researchWorks.splice(i, 1); render(); } }
+
+    async function saveToGitHub() {
+        const token = document.getElementById('gh-token').value;
+        showMsg("Publishing...", "#f39c12");
+        const newData = `/* DATA_START */\nconst researchWorks = ${JSON.stringify(researchWorks, null, 2)};\n/* DATA_END */`;
+        const updated = originalContent.replace(/\/\* DATA_START \*\/[\s\S]*?\/\* DATA_END \*\//, newData);
+        try {
+            const res = await fetch(`https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${GITHUB.path}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: "Research Update", content: btoa(unescape(encodeURIComponent(updated))), sha: fileSha })
+            });
+            if(res.ok) { const r = await res.json(); fileSha = r.content.sha; showMsg("Published Successfully!", "#27ae60"); }
+        } catch (e) { showMsg("Failed to Save!", "#e74c3c"); }
+    }
+
+    function showMsg(m, c) { const s = document.getElementById('status'); s.innerText = m; s.style.background = c; s.style.display = 'block'; setTimeout(()=>s.style.display='none', 3000); }
+</script>
+</body>
+</html>
