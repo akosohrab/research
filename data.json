@@ -1,0 +1,20 @@
+{
+  "sidebar": {
+    "photo": "https://researchmap.jp/sohrab.ahmadian/avatar.jpg",
+    "name": "Sohrab Ahmadian, Ph.D.",
+    "title": "JSPS Postdoctoral Fellow",
+    "bio": "Academic blog focused on Migration Studies, Kurdish Diaspora, and Political Anthropology."
+  },
+  "works": [
+    {
+      "id": "1",
+      "type": "Article",
+      "date": "2024",
+      "lang": "en",
+      "title": "Kurdish Diaspora in Japan",
+      "abstract": "This study examines the digital footprint of the Kurdish community in Japan...",
+      "source": "Palgrave Macmillan",
+      "link": "https://doi.org/10.1007/978-981-97-2867-1_10"
+    }
+  ]
+}
