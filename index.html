@@ -6,7 +6,6 @@
     <title>Sohrab Ahmadian | Research Highlights</title>
     
     <meta name="citation_author" content="Ahmadian, Sohrab">
-    <meta name="citation_publisher" content="Sohrab Ahmadian Academic Blog">
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -14,7 +13,7 @@
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; min-height: 100vh; }
         .sidebar { width: var(--sidebar-width); background: white; padding: 40px 30px; display: flex; flex-direction: column; align-items: center; text-align: center; border-right: 1px solid #eee; position: fixed; height: 100vh; overflow-y: auto; }
-        .profile-photo { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .profile-photo { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 4px solid #fff; }
         .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 40px 5%; width: 100%; }
         .tabs-container { display: flex; justify-content: center; gap: 8px; margin-bottom: 30px; border-bottom: 2px solid #ddd; padding-bottom: 10px; position: sticky; top: 0; background: var(--bg); z-index: 100; flex-wrap: wrap; }
         .tab-btn { padding: 10px 18px; border: none; background: none; font-weight: bold; cursor: pointer; color: #888; border-radius: 5px; }
@@ -27,12 +26,9 @@
         .abstract-container { overflow: hidden; max-height: 120px; transition: max-height 0.4s ease; }
         .abstract-container.expanded { max-height: 3000px; }
         .read-more-btn { color: var(--accent); cursor: pointer; border: none; background: none; font-weight: bold; margin: 15px 0; }
-        
-        /* Citation Box Style */
-        .cite-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 15px; border-radius: 6px; margin-top: 15px; font-family: monospace; font-size: 0.8rem; position: relative; display: none; }
+        .cite-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 15px; border-radius: 6px; margin-top: 15px; font-family: monospace; font-size: 0.8rem; position: relative; display: none; white-space: pre-wrap; word-break: break-all; }
         .cite-box.show { display: block; }
         .copy-btn { position: absolute; top: 5px; right: 5px; background: var(--primary); color: white; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; }
-
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @media (max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; height: auto; position: relative; } .main-content { margin-left: 0; } }
     </style>
@@ -46,7 +42,7 @@
         <button class="tab-btn" onclick="filterByLang('ku', this)">کوردی</button>
         <button class="tab-btn" onclick="filterByLang('fa', this)">فارسی</button>
     </div>
-    <div id="blog-container"></div>
+    <div id="blog-container">Loading Research Data...</div>
     <div id="no-data-msg" style="text-align:center; color:#999; display:none; padding:50px;"></div>
 </div>
 
@@ -55,45 +51,57 @@ let allWorks = [];
 const labels = { en: "Read More...", jp: "続きを読む...", fa: "ادامه مطلب...", ku: "درێژە..." };
 
 async function loadData() {
-    const res = await fetch('data.json');
-    const data = await response.json();
-    allWorks = data.works;
-    renderSidebar(data.sidebar);
-    renderWorks();
-    filterByLang('en');
+    try {
+        const res = await fetch('data.json');
+        if (!res.ok) throw new Error('Could not find data.json');
+        const data = await res.json();
+        allWorks = data.works || [];
+        renderSidebar(data.sidebar);
+        renderWorks();
+        filterByLang('en');
+    } catch (e) { 
+        document.getElementById('blog-container').innerHTML = `<div style="color:red; text-align:center; padding:20px;">
+            <b>Error loading data:</b> ${e.message}<br>
+            Please check if data.json exists and has correct format.
+        </div>`;
+    }
 }
 
 function renderSidebar(s) {
+    if(!s) return;
     document.getElementById('sidebar-ui').innerHTML = `
-        <img src="${s.photo}" class="profile-photo">
-        <h1>${s.name}</h1>
-        <p style="color:var(--accent); font-weight:bold;">${s.title}</p>
-        <div style="font-size:0.85rem; padding:15px; color:#555;">${s.bio}</div>
+        <img src="${s.photo || ''}" class="profile-photo" onerror="this.src='https://via.placeholder.com/150'">
+        <h1>${s.name || 'Sohrab Ahmadian'}</h1>
+        <p style="color:var(--accent); font-weight:bold;">${s.title || ''}</p>
+        <div style="font-size:0.85rem; padding:15px; color:#555;">${s.bio || ''}</div>
         <a href="https://scholar.google.com/citations?user=dWut0kwAAAAJ&hl=en" target="_blank" style="display:block; margin:10px; color:#4285f4; font-weight:bold; text-decoration:none; font-size:0.85rem;">🎓 Google Scholar Profile</a>
         <a href="https://akosohrab.github.io/CV" style="text-decoration:none; color:#999; font-size:0.8rem;">← Full Academic CV</a>
     `;
 }
 
 function renderWorks() {
-    document.getElementById('blog-container').innerHTML = allWorks.map((work, i) => {
+    const container = document.getElementById('blog-container');
+    if(allWorks.length === 0) { container.innerHTML = "No posts available."; return; }
+    
+    container.innerHTML = allWorks.map((work, i) => {
         const isRtl = (work.lang === 'fa' || work.lang === 'ku');
         const alignmentClass = isRtl ? 'rtl-box' : 'ltr-box';
-        const bibtex = `@article{ahmadian${work.date}, title={${work.title}}, author={Ahmadian, Sohrab}, year={${work.date}}, journal={${work.source}} }`;
+        const bibtex = `@article{ahmadian${work.date || '2026'},\n  title={${work.title || ''}},\n  author={Ahmadian, Sohrab},\n  year={${work.date || '2026'}},\n  journal={${work.source || 'Research Blog'}}\n}`;
         
         return `
             <div class="work-card lang-group-${work.lang} ${alignmentClass}">
-                <div style="font-size:0.75rem; color:#999;">${work.date} • ${work.type}</div>
-                <h2 class="title">${work.title}</h2>
+                <div style="font-size:0.75rem; color:#999;">${work.date || ''} • ${work.type || ''}</div>
+                <h2 class="title">${work.title || 'Untitled'}</h2>
                 <div class="abstract-container" id="container-${i}">
-                    <div style="line-height:1.8;">${marked.parse(work.abstract)}</div>
+                    <div style="line-height:1.8;">${marked.parse(work.abstract || '')}</div>
                 </div>
                 <button class="read-more-btn" onclick="toggleReadMore(${i}, '${work.lang}')" id="btn-${i}">${labels[work.lang] || labels.en}</button>
                 
-                <div style="margin-top:15px; border-top:1px dashed #eee; padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.8rem; color:#888;">Source: ${work.source}</span>
+                <div style="margin-top:15px; border-top:1px dashed #eee; padding-top:15px; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.8rem; color:#888;">Source: ${work.source || 'N/A'}</span>
                     <div style="display:flex; gap:10px;">
                         <button onclick="toggleCite(${i})" style="font-size:0.75rem; cursor:pointer; background:none; border:1px solid #ccc; padding:4px 8px; border-radius:4px;">Cite</button>
-                        <a href="${work.link}" target="_blank" style="color:white; background:var(--primary); padding:6px 15px; border-radius:4px; text-decoration:none; font-size:0.75rem;">Full Text</a>
+                        <a href="${work.link || '#'}" target="_blank" style="color:white; background:var(--primary); padding:6px 15px; border-radius:4px; text-decoration:none; font-size:0.75rem;">Full Text</a>
                     </div>
                 </div>
                 <div id="cite-${i}" class="cite-box">
@@ -118,11 +126,12 @@ function filterByLang(lang, btn) {
         if(c.classList.contains(`lang-group-${lang}`)) { c.classList.add('show'); count++; }
     });
     document.getElementById('no-data-msg').style.display = count === 0 ? 'block' : 'none';
+    document.getElementById('no-data-msg').innerText = "No posts found in this language.";
 }
 function toggleReadMore(i, lang) {
     const c = document.getElementById(`container-${i}`);
     c.classList.toggle('expanded');
-    document.getElementById(`btn-${i}`).innerText = c.classList.contains('expanded') ? (lang==='fa'?'بستن':(lang==='jp'?'閉じる':'Close')) : (labels[lang] || labels.en);
+    document.getElementById(`btn-${i}`).innerText = c.classList.contains('expanded') ? (lang==='fa'?'بستن':(lang==='jp'?'閉じる':(lang==='ku'?'داخستن':'Close'))) : (labels[lang] || labels.en);
 }
 window.onload = loadData;
 </script>
