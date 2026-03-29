@@ -2,45 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Research Editor v5.1</title>
+    <title>Academic Data Manager v6.0</title>
     <style>
         :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f4f7f6; }
-        body { font-family: sans-serif; background: var(--bg); padding: 20px; }
-        .nav { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; border-radius: 8px; position: sticky; top: 0; z-index: 100; }
-        .card { background: white; padding: 25px; border-radius: 8px; margin-top: 20px; border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        label { font-weight: bold; color: #555; display: block; margin-top: 10px; font-size: 0.9rem; }
-        input, textarea, select { width: 100%; padding: 12px; margin: 5px 0 15px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; font-size: 14px; }
-        textarea { height: 150px; line-height: 1.6; }
-        .btn { padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-save { background: var(--accent); color: white; width: 100%; font-size: 1.1rem; margin-top: 20px; }
-        .hint { font-size: 0.75rem; color: #888; margin-bottom: 15px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; margin: 0; }
+        .nav { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 900px; margin: 25px auto; }
+        .card { background: white; padding: 25px; border-radius: 12px; margin-top: 20px; border: 1px solid #ddd; position: relative; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
+        label { display: block; font-weight: bold; font-size: 0.8rem; color: #555; margin-bottom: 5px; text-transform: uppercase; }
+        input, textarea, select { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box; }
+        textarea { height: 160px; line-height: 1.6; }
+        .btn { padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-save { background: var(--accent); color: white; width: 100%; font-size: 1.1rem; margin-top: 30px; }
+        .btn-add { background: var(--primary); color: white; }
+        .hint { background: #e8f4fd; padding: 10px; border-radius: 5px; font-size: 0.8rem; color: #2980b9; margin-bottom: 15px; border-left: 4px solid #3498db; }
     </style>
 </head>
 <body>
 
 <div class="nav">
-    <div style="font-weight:bold;">RESEARCH DATA EDITOR v5.1</div>
-    <div>
-        <input type="password" id="gh-token" placeholder="GitHub Token" style="width:200px; margin:0; padding:8px; border-radius:4px; border:none;">
-        <button class="btn" style="background:white; color:var(--primary); padding:8px 15px;" onclick="fetchData()">Load Data</button>
+    <div style="font-size: 20px; font-weight: 900;">ACADEMIC EDITOR <span style="font-weight: 300; font-size: 14px;">v6.0</span></div>
+    <div style="display: flex; gap: 10px;">
+        <input type="password" id="gh-token" placeholder="GitHub Token" style="width: 200px; margin: 0; padding: 8px; border: none;">
+        <button class="btn" style="background: white; color: var(--primary); padding: 8px 15px;" onclick="fetchData()">Load JSON</button>
     </div>
 </div>
 
-<div id="editor-ui" style="display:none; max-width: 900px; margin: auto;">
+<div class="container" id="editor-ui" style="display:none;">
     <div class="card">
-        <h3 style="margin-top:0;">Sidebar / Profile Info</h3>
+        <h3 style="margin-top: 0; color: var(--primary);">Sidebar Profile</h3>
         <label>Photo URL</label><input id="s-photo" onchange="data.sidebar.photo=this.value">
         <label>Display Name</label><input id="s-name" onchange="data.sidebar.name=this.value">
-        <label>Title</label><input id="s-title" onchange="data.sidebar.title=this.value">
-        <label>Bio Summary</label><textarea id="s-bio" onchange="data.sidebar.bio=this.value"></textarea>
+        <label>Title/Affiliation</label><input id="s-title" onchange="data.sidebar.title=this.value">
+        <label>Short Bio</label><textarea id="s-bio" onchange="data.sidebar.bio=this.value" style="height: 80px;"></textarea>
     </div>
-    
-    <div style="text-align:right; margin-top:30px;">
-        <button class="btn" style="background:var(--primary); color:white;" onclick="addWork()">+ Add New Publication / Abstract</button>
+
+    <div style="text-align: right; margin-top: 30px;">
+        <button class="btn btn-add" onclick="addWork()">+ Add New Research Post</button>
     </div>
-    
+
     <div id="works-list"></div>
-    <button class="btn btn-save" onclick="saveData()">PUBLISH UPDATES TO GITHUB</button>
+
+    <button class="btn btn-save" onclick="saveData()">PUBLISH ALL TO DATA.JSON</button>
 </div>
 
 <script>
@@ -49,8 +52,7 @@
 
     async function fetchData() {
         const token = document.getElementById('gh-token').value;
-        if(!token) return alert("Please enter your GitHub Token");
-        
+        if(!token) return alert("Token Required");
         try {
             const res = await fetch(`https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${GITHUB.path}`, {
                 headers: { 'Authorization': `token ${token}` }
@@ -65,41 +67,40 @@
             document.getElementById('s-bio').value = data.sidebar.bio || '';
             document.getElementById('editor-ui').style.display = 'block';
             renderWorks();
-        } catch (e) { alert("Error loading data. Check token and markers."); }
+        } catch (e) { alert("Connect Error!"); }
     }
 
     function renderWorks() {
         const list = document.getElementById('works-list');
         list.innerHTML = data.works.map((w, i) => `
             <div class="card">
-                <button style="float:right; color:red; border:none; background:none; cursor:pointer; font-weight:bold;" onclick="if(confirm('Delete?')){data.works.splice(${i},1); renderWorks();}">Delete [X]</button>
+                <button style="float:right; color:red; border:none; background:none; font-weight:bold; cursor:pointer;" onclick="if(confirm('Delete?')){data.works.splice(${i},1); renderWorks();}">[Delete Post]</button>
                 
-                <label>Language</label>
-                <select onchange="data.works[${i}].lang=this.value; renderWorks();">
-                    <option value="en" ${w.lang==='en'?'selected':''}>English</option>
-                    <option value="jp" ${w.lang==='jp'?'selected':''}>Japanese</option>
-                    <option value="fa" ${w.lang==='fa'?'selected':''}>Persian (RTL)</option>
-                    <option value="ku" ${w.lang==='ku'?'selected':''}>Kurdish (RTL)</option>
-                </select>
-
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                    <div><label>Date</label><input value="${w.date || ''}" onchange="data.works[${i}].date=this.value"></div>
-                    <div><label>Type (e.g. Article)</label><input value="${w.type || ''}" onchange="data.works[${i}].type=this.value"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label>Language & Direction</label>
+                        <select onchange="data.works[${i}].lang=this.value; renderWorks();">
+                            <option value="en" ${w.lang==='en'?'selected':''}>English (LTR)</option>
+                            <option value="fa" ${w.lang==='fa'?'selected':''}>Persian (RTL)</option>
+                            <option value="ku" ${w.lang==='ku'?'selected':''}>Kurdish (RTL)</option>
+                            <option value="jp" ${w.lang==='jp'?'selected':''}>Japanese (LTR)</option>
+                        </select>
+                    </div>
+                    <div><label>Publication Year</label><input value="${w.date || ''}" onchange="data.works[${i}].date=this.value"></div>
                 </div>
 
-                <label>Title</label>
+                <label>Title (Scientific/Article Title)</label>
                 <input value="${w.title || ''}" onchange="data.works[${i}].title=this.value">
 
-                <label>Abstract / Key Findings</label>
-                <div class="hint">Use **text** for Bold, *text* for Italic.</div>
+                <label>Abstract / Findings</label>
+                <div class="hint">Use **Text** for Bold. High-quality abstracts improve Google Scholar ranking.</div>
                 <textarea onchange="data.works[${i}].abstract=this.value">${w.abstract || ''}</textarea>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                    <div><label>Journal Name / Source</label>
-                         <input value="${w.source || ''}" onchange="data.works[${i}].source=this.value"></div>
-                    <div><label>Full Record Link (URL)</label>
-                         <input value="${w.link || ''}" onchange="data.works[${i}].link=this.value"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div><label>Journal Name / Publisher</label><input value="${w.source || ''}" onchange="data.works[${i}].source=this.value"></div>
+                    <div><label>DOI / Full Text Link</label><input value="${w.link || ''}" onchange="data.works[${i}].link=this.value"></div>
                 </div>
+                <p style="font-size: 11px; color: #888; margin: 0;">* This information will generate the BibTeX citation automatically for other researchers.</p>
             </div>
         `).join('');
     }
@@ -114,14 +115,14 @@
         const token = document.getElementById('gh-token').value;
         const res = await fetch(`https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${GITHUB.path}`, {
             method: 'PUT',
-            headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+            headers: { 'Authorization': `token ${token}` },
             body: JSON.stringify({
-                message: "Update Research Content v5.1",
+                message: "Update Academic Data v6.0",
                 content: btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2)))),
                 sha: fileSha
             })
         });
-        if(res.ok) alert("Data.json Updated Successfully!");
+        if(res.ok) alert("Research Data Synchronized!");
     }
 </script>
 </body>
